@@ -36,12 +36,13 @@ class$Income_Class = case_when(class$Income_Group == "Low income" ~ 1,
                                class$Income_Group == "High income" ~ 4)
  
 data = data %>% full_join(class, by = 'Country')
-data = data %>% filter(Year <= 2000)
 ```
 
 # Descriptive statistics
 
 ```{r}
+## (Table A3)
+
 data2 = data %>% select(-Year, -n, -Income_Class)
 t = prepare_descriptive_table(data2)
 t$kable_ret
@@ -55,14 +56,16 @@ Q3 = quantile(data$Educ_Gender_Equality, .75, na.rm = TRUE)
 IQR = IQR(data$Educ_Gender_Equality, na.rm = TRUE)
 subset(data, data$Educ_Gender_Equality < (Q1 - 1.5*IQR) | data$Educ_Gender_Equality > (Q3 + 1.5*IQR)) %>% select(Country, Year, Educ_Gender_Equality)
 
-#Gabon is an obvious outlier (Figure 1)
+#Gabon is an obvious outlier
+## (Figure A1)
 
+data_drop = data %>% drop_na(Region)
 list = c()
-for (i in 1:length(data$Country)){
-  list = rbind(list, ifelse(data$Country[i] == 'Gabon', 'Gabon', ''))
+for (i in 1:length(data_drop$Country)){
+  list = rbind(list, ifelse(data_drop$Country[i] == 'Gabon', 'Gabon', ''))
 }
 gabons = data.frame(gabons = c(list))
-ggplot(data, aes(Country, Educ_Gender_Equality, color = Region)) + geom_point() + theme_minimal() + ylab('educational gender equality') + scale_color_manual(values =  c("#f7db86", "#ad2431", "#f4eed3", "#9ab19a", '#533549', '#7a6c5d', '#202647')) + xlab('') + theme(panel.background = element_rect(fill = 'white', color = 'white'), panel.grid.major = element_line(color = 'grey', size = 0.02)) + geom_text(label = gabons$gabons, nudge_x = 14, check_overlap = T, size = 3) + theme(axis.text.x=element_blank())
+ggplot(data_drop, aes(Country, Educ_Gender_Equality, color = Region)) + geom_point() + theme_minimal() + ylab('educational gender equality') + scale_color_manual(values =  c("#f7db86", "#ad2431", "#f4eed3", "#9ab19a", '#533549', '#7a6c5d', '#202647')) + xlab('countries') + theme(panel.background = element_rect(fill = 'white', color = 'white'), panel.grid.major = element_line(color = 'grey', size = 0.02)) + geom_text(label = gabons$gabons, nudge_x = 16, check_overlap = T, size = 4, family = "Times New Roman") + theme(axis.text.x = element_blank()) + theme(text = element_text(family = "Times New Roman", size = 12))
 
 
 
@@ -71,14 +74,15 @@ Q3 = quantile(data$Investments, .75, na.rm = TRUE)
 IQR = IQR(data$Investments, na.rm = TRUE)
 subset(data, data$Investments < (Q1 - 1.5*IQR) | data$Investments > (Q3 + 1.5*IQR)) %>% select(Country, Year, Investments)
 
-#Zimbabwe is an obvious outlier (Figure 2)
+#Zimbabwe is an obvious outlier
+## (Figure A2)
 
 list = c()
-for (i in 1:length(data$Country)){
-  list = rbind(list, ifelse(data$Country[i] == 'Zimbabwe', 'Zimbabwe', ''))
+for (i in 1:length(data_drop$Country)){
+  list = rbind(list, ifelse(data_drop$Country[i] == 'Zimbabwe', 'Zimbabwe', ''))
 }
 zimbabves = data.frame(zimbabves = c(list))
-ggplot(data, aes(Country, Investments, color = Region)) + geom_point() + theme_minimal() + ylab('investments in education') + scale_color_manual(values =  c("#f7db86", "#ad2431", "#f4eed3", "#9ab19a", '#533549', '#7a6c5d', '#202647')) + xlab('') + xlim(data$Country) + theme(panel.background = element_rect(fill = 'white', color = 'white'), panel.grid.major = element_line(color = 'grey', size = 0.02)) + geom_text(label = zimbabves$zimbabves, nudge_x = -700, check_overlap = T, size = 3) + theme(axis.text.x = element_blank()) 
+ggplot(data_drop, aes(Country, Investments, color = Region)) + geom_point() + theme_minimal() + ylab('investments in education') + scale_color_manual(values =  c("#f7db86", "#ad2431", "#f4eed3", "#9ab19a", '#533549', '#7a6c5d', '#202647')) + xlab('countries') + xlim(data$Country) + theme(panel.background = element_rect(fill = 'white', color = 'white'), panel.grid.major = element_line(color = 'grey', size = 0.02)) + geom_text(label = zimbabves$zimbabves, nudge_x = -2000, family = "Times New Roman", check_overlap = T, size = 4) + theme(axis.text.x = element_blank()) + theme(text = element_text(family = "Times New Roman", size = 12))
 ```
 
 # Show that the dataset is unbalanced
@@ -135,19 +139,19 @@ observations = observations %>% full_join(class, by = 'Country')
 Dependence of the number of observations on the region of the country
 
 ```{r}
-observations2 = observations %>% drop_na(Region)
+## (Figure A3)
 
-## Figure 3
-ggplot(observations2, aes(x = Region, y = row_mean, color = Region)) + geom_boxplot() + ylab('mean frequency of observations among variables') + xlab('') + geom_jitter(position = position_jitter(0.2)) + scale_color_manual(values =  c("#f7db86", "#ad2431", "#f4eed3", "#9ab19a", '#533549', '#7a6c5d', '#202647')) + theme_minimal() + theme(axis.text.x = element_text(angle = 15, vjust = 0.8, hjust = 0.75, size = 8, color = 'black'), legend.position = "none", plot.title = element_text(hjust = 0.5)) + ggtitle('Countries by Region')
+observations2 = observations %>% drop_na(Region)
+ggplot(observations2, aes(x = Region, y = row_mean, color = Region)) + geom_boxplot() + ylab('mean frequency of observations among variables') + xlab('') + geom_jitter(position = position_jitter(0.2)) + scale_color_manual(values =  c("#f7db86", "#ad2431", "#f4eed3", "#9ab19a", '#533549', '#7a6c5d', '#202647')) + theme_minimal() + theme(axis.text.x = element_text(angle = 15, vjust = 0.8, hjust = 0.75, size = 8, color = 'black'), legend.position = "none", plot.title = element_text(hjust = 0.5)) + ggtitle('Countries by Region') + theme(text = element_text(family = "Times New Roman")) + theme(axis.text.x = element_text(size = 10))
 ```
 
 Dependence of the number of observations on the welfare of the country
 
 ```{r}
-observations1 = observations %>% drop_na(Income_Group)
+## (Figure A4)
 
-## Figure 4
-ggplot(observations1, aes(x = Income_Group, y = row_mean, color = Income_Group)) + geom_boxplot() + ylab('mean frequency of observations among variables') + geom_jitter(position = position_jitter(0.2)) + scale_color_manual(values =  c("#f7db86", '#202647', "#ad2431", "#9ab19a")) + theme_minimal() + theme(axis.text.x = element_text(color = 'black', size = 9.5), legend.position = "none", plot.title = element_text(hjust = 0.5)) + aes(x = fct_inorder(Income_Group)) + xlab('') + ggtitle('Countries by Income Level')
+observations1 = observations %>% drop_na(Income_Group)
+ggplot(observations1, aes(x = Income_Group, y = row_mean, color = Income_Group)) + geom_boxplot() + ylab('mean frequency of observations among variables') + geom_jitter(position = position_jitter(0.2)) + scale_color_manual(values =  c("#f7db86", '#202647', "#ad2431", "#9ab19a")) + theme_minimal() + theme(axis.text.x = element_text(color = 'black', size = 9.5), legend.position = "none", plot.title = element_text(hjust = 0.5)) + aes(x = fct_inorder(Income_Group)) + xlab('') + ggtitle('Countries by Income Level') + theme(text = element_text(family = "Times New Roman")) + theme(axis.text.x = element_text(angle = 15, vjust = 0.8, hjust = 0.75, size = 12))
 ```
 
 # Connection between the regressors and the dependent variable
@@ -155,159 +159,166 @@ ggplot(observations1, aes(x = Income_Group, y = row_mean, color = Income_Group))
 Dependence of Share_in_Parliament from GDP for different groups of countries
 
 ```{r}
-# Scatter plot (Figure 5)
+## (Figure 1)
 
 exper4 = data %>% drop_na(GDP, Share_in_Parliament) %>% group_by(Region, Year) %>% summarise(gdp = median(GDP), share = median(Share_in_Parliament)) %>% drop_na(Region)
-ggplot() + geom_point(aes(exper4$gdp, exper4$share, col = as.factor(exper4$Region))) + theme_minimal() + xlab('median GDP') + ylab('median share of women in parliament') + scale_colour_manual(name = "Region") + scale_colour_manual(name = "Region", values = c("#f7db86", "#ad2431", "#f4eed3", "#9ab19a", '#533549', '#7a6c5d', '#202647'))
+ggplot() + geom_point(aes(exper4$gdp, exper4$share, col = as.factor(exper4$Region))) + theme_minimal() + xlab('median GDP') + ylab('median share of women in parliament') + scale_colour_manual(name = "Region") + scale_colour_manual(name = "Region", values = c("#f7db86", "#ad2431", "#f4eed3", "#9ab19a", '#533549', '#7a6c5d', '#202647')) + theme(axis.text.x = element_text(size = 13, vjust = 5), axis.text.y = element_text(size = 13), text = element_text(family = "Times New Roman", size = 11.5), legend.text = element_text(size = 11))
 
 
 # Detalization
 
-## Figure 6
+## (Figure A5)
+africa = data %>% filter(Region == 'Middle East & North Africa')
+model = lm(GDP ~ Share_in_Parliament, africa)
+ggplot(africa) + geom_point(aes(Share_in_Parliament, GDP), col = '#9ab19a') + theme_minimal() + xlab('share in parliament') + ylab("GDP") + theme(plot.title = element_text(hjust = 0.5)) + geom_abline(slope = coef(model)[["Share_in_Parliament"]], intercept = coef(model)[["(Intercept)"]], size = 0.6) + theme(text = element_text(family = "Times New Roman", size = 16)) + ggtitle('Middle East & North Africa')
+
+## (Figure A6)
 europe = data %>% filter(Region == 'Europe & Central Asia')
 model = lm(GDP ~ Share_in_Parliament, europe)
-ggplot(europe) + geom_point(aes(Share_in_Parliament, GDP), col = '#ad2431') + theme_minimal() + xlab('share in parliament') + ylab("GDP") + ggtitle('Europe & Central Asia') + theme(plot.title = element_text(hjust = 0.5)) + geom_abline(slope = coef(model)[["Share_in_Parliament"]], intercept = coef(model)[["(Intercept)"]], size = 0.8)
+ggplot(europe) + geom_point(aes(Share_in_Parliament, GDP), col = '#ad2431') + theme_minimal() + xlab('share in parliament') + ylab("GDP") + theme(plot.title = element_text(hjust = 0.5)) + geom_abline(slope = coef(model)[["Share_in_Parliament"]], intercept = coef(model)[["(Intercept)"]], size = 0.8) + theme(text = element_text(family = "Times New Roman", size = 16)) + ggtitle('Europe & Central Asia')
 
-## Figure 7
+## (Figure A7)
 america = data %>% filter(Region == 'North America')
 model = lm(GDP ~ Share_in_Parliament, america)
-ggplot(america) + geom_point(aes(Share_in_Parliament, GDP), col = '#533549') + theme_minimal() + xlab('share in parliament') + ylab("GDP") + ggtitle('North America') + theme(plot.title = element_text(hjust = 0.5)) + geom_abline(slope = coef(model)[["Share_in_Parliament"]], intercept = coef(model)[["(Intercept)"]], size = 0.6)
+ggplot(america) + geom_point(aes(Share_in_Parliament, GDP), col = '#533549') + theme_minimal() + xlab('share in parliament') + ylab("GDP") + theme(plot.title = element_text(hjust = 0.5)) + geom_abline(slope = coef(model)[["Share_in_Parliament"]], intercept = coef(model)[["(Intercept)"]], size = 0.6) + theme(text = element_text(family = "Times New Roman", size = 16)) + ggtitle('North America')
 ```
 
 Dependence of Right_to_Vote from GDP for different groups of countries (by region)
 
 ```{r}
-# Europe & Central Asia, right to vote (Figure 8)
+# Europe & Central Asia, right to vote 
+## (Figure 2)
 
 europe = data %>% filter(Region == 'Europe & Central Asia')
 europe$Right_to_Vote = as.factor(europe$Right_to_Vote)
 europe = europe %>% drop_na(Right_to_Vote)
-ggplot(europe, aes(x = Right_to_Vote, y = GDP)) + geom_boxplot(fill = '#C64955') + theme_minimal() + xlab("women's right to vote") + scale_x_discrete(labels = c("no","yes")) + ggtitle('Europe & Central Asia') + theme(plot.title = element_text(hjust = 0.5))
+europe = europe %>% mutate(period = case_when(
+  Year <= 1975 ~ '1960-1975',
+  Year > 1975 & Year <= 1990 ~ '1976-1990',
+  Year > 1990 & Year <= 2009 ~ '1991-2009',
+  Year > 2009 ~ '2010-2021'
+))
+ggplot(europe, aes(x = Right_to_Vote, y = GDP, color = period)) + geom_boxplot() + theme_minimal() + xlab("women's right to vote") + ggtitle(str_c('Europe & Central Asia, ', length(unique(europe$Country)), ' countries')) + scale_color_manual(values =  c('#D93141', "#ad2431", "#7E1B24", '#400E12')) + theme(
+  axis.text.x = element_text(family = "Times New Roman", size = 16, vjust = 5), 
+  axis.title.x = element_text(family = "Times New Roman", size = 15), 
+  axis.text.y = element_text(family = "Times New Roman", size = 13), 
+  axis.title.y = element_text(family = "Times New Roman", size = 15), 
+  legend.text = element_text(family = "Times New Roman", size = 13),
+  legend.title = element_text(family = "Times New Roman", size = 15),
+  text = element_text(family = "Times New Roman", size = 12)) 
 
-# North America, right to vote (Figure 9)
+
+# North America, right to vote 
+## (Figure 3)
 
 america = data %>% filter(Region == 'North America')
 america$Right_to_Vote = as.factor(america$Right_to_Vote)
 america = america %>% drop_na(Right_to_Vote)
-ggplot(america, aes(x = Right_to_Vote, y = GDP)) + geom_boxplot(fill = '#533549', col = 'black') + theme_minimal() + xlab("women's right to vote") + scale_x_discrete(labels = c("no","yes")) + ggtitle('North America') + theme(plot.title = element_text(hjust = 0.5))
+america = america %>% mutate(period = case_when(
+  Year <= 1975 ~ '1960-1975',
+  Year > 1975 & Year <= 1990 ~ '1976-1990',
+  Year > 1990 & Year <= 2009 ~ '1991-2009',
+  Year > 2009 ~ '2010-2021'
+))
+ggplot(america, aes(x = Right_to_Vote, y = GDP, color = period)) + geom_boxplot() + theme_minimal() + xlab("women's right to vote") + ggtitle(str_c('North America, ', length(unique(america$Country)), ' countries')) + scale_color_manual(values =  c('#7A4669', '#6E2757', "#533549", 'black')) + theme(
+  axis.text.x = element_text(family = "Times New Roman", size = 16, vjust = 5), 
+  axis.title.x = element_text(family = "Times New Roman", size = 15), 
+  axis.text.y = element_text(family = "Times New Roman", size = 13), 
+  axis.title.y = element_text(family = "Times New Roman", size = 15), 
+  legend.text = element_text(family = "Times New Roman", size = 13),
+  legend.title = element_text(family = "Times New Roman", size = 15),
+  text = element_text(family = "Times New Roman", size = 12)) 
 
-# Middle East & North Africa, right to vote (Figure 10)
+
+# Middle East & North Africa, right to vote 
+## (Figure 4)
 
 east = data %>% filter(Region == 'Middle East & North Africa')
 east$Right_to_Vote = as.factor(east$Right_to_Vote)
 east = east %>% drop_na(Right_to_Vote)
-ggplot(east, aes(x = Right_to_Vote, y = GDP)) + geom_boxplot(fill = '#9ab19a') + theme_minimal() + xlab("women's right to vote") + scale_x_discrete(labels = c("no","yes")) + ggtitle('Middle East & North Africa') + theme(plot.title = element_text(hjust = 0.5))
+east = east %>% mutate(period = case_when(
+  Year <= 1975 ~ '1960-1975',
+  Year > 1975 & Year <= 1990 ~ '1976-1990',
+  Year > 1990 & Year <= 2009 ~ '1991-2009',
+  Year > 2009 ~ '2010-2021'
+))
+ggplot(east, aes(x = Right_to_Vote, y = GDP, color = period)) + geom_boxplot() + theme_minimal() + xlab("women's right to vote") + ggtitle(str_c('Middle East & North Africa, ', length(unique(east$Country)), ' countries')) + scale_color_manual(values =  c('#9ab19a', '#97D897', "#4A864A", '#224C22')) + theme(
+  axis.text.x = element_text(family = "Times New Roman", size = 16, vjust = 5), 
+  axis.title.x = element_text(family = "Times New Roman", size = 15), 
+  axis.text.y = element_text(family = "Times New Roman", size = 13), 
+  axis.title.y = element_text(family = "Times New Roman", size = 15), 
+  legend.text = element_text(family = "Times New Roman", size = 13),
+  legend.title = element_text(family = "Times New Roman", size = 15),
+  text = element_text(family = "Times New Roman", size = 12)) 
+```
+
+How democracy varies from region to region
+
+```{r}
+## (Figure A8)
+
+democracy_plot = no_outliers
+democracy_plot$Region = as.factor(democracy_plot$Region)
+democracy_plot = democracy_plot %>% drop_na(Region)
+
+ggplot(democracy_plot, aes(Region, Democracy_Estimate, color = Region)) + geom_boxplot() + ylab('democracy estimate') + scale_color_manual(values = c("#f7db86", "#ad2431", "#f4eed3", "#9ab19a", '#533549', '#7a6c5d', '#202647')) + theme_minimal() + xlab('') + theme(axis.text.x = element_text(angle = 15, vjust = 0.8, hjust = 0.75, size = 8, color = 'black'), legend.position = "none", plot.title = element_text(hjust = 0.5)) + theme(text = element_text(family = "Times New Roman")) + theme(axis.text.x = element_text(size = 10), axis.title.y = element_text(size = 15), axis.text.y = element_text(size = 10))
 ```
 
 # Tests for correlations between variables
 
 ```{r}
+## (Table A4)
+
 #GDP_growth and regressors
-cor.test(data$GDP_growth, data$Right_to_Vote) #-0.0405, significant
-cor.test(data$GDP_growth, data$Share_in_Parliament) #-0.0040, significant
-
-#Educ_Gender_Equality
-cor.test(data$Educ_Gender_Equality, data$GDP_growth) #0.0914, significant
-cor.test(data$Educ_Gender_Equality, data$Right_to_Vote) #0.0308, non-significant
-cor.test(data$Educ_Gender_Equality, data$Share_in_Parliament) #0.2863, significant
-
-#Female_Years_School
-cor.test(data$Female_Years_School, data$GDP_growth) #0.1041, significant
-cor.test(data$Female_Years_School, data$Right_to_Vote) #0.1305, significant
-cor.test(data$Female_Years_School, data$Share_in_Parliament) #0.4439, significant
-
-#Investments_In_Educatoin
-cor.test(data$Investments, data$GDP_growth) #0.0357, non-significant
-cor.test(data$Investments, data$Right_to_Vote) #0.02236, non-significant
-cor.test(data$Investments, data$Share_in_Parliament) #0.2805, significant
+cor.test(data$GDP_growth, data$Share_in_Parliament)
 
 #Democracy_Estimate
-cor.test(data$Democracy_Estimate, data$GDP_growth) #0.0584, significant
-cor.test(data$Democracy_Estimate, data$Right_to_Vote) #0.3213, significant
-cor.test(data$Democracy_Estimate, data$Share_in_Parliament) #0.1861, significant
+cor.test(data$Democracy_Estimate, data$GDP_growth)
+cor.test(data$Democracy_Estimate, data$Share_in_Parliament)
+
+#Educ_Gender_Equality
+cor.test(data$Educ_Gender_Equality, data$GDP_growth)
+cor.test(data$Educ_Gender_Equality, data$Share_in_Parliament)
+
+#Female_Years_School
+cor.test(data$Female_Years_School, data$GDP_growth)
+cor.test(data$Female_Years_School, data$Share_in_Parliament)
+
+#Investments_In_Educatoin
+cor.test(data$Investments, data$GDP_growth)
+cor.test(data$Investments, data$Share_in_Parliament)
 
 #Total_Fertility_Rate
-cor.test(data$Total_Fertility_Rate, data$GDP_growth) #-0.0866, significant
-cor.test(data$Total_Fertility_Rate, data$Right_to_Vote) #-0.2219, significant
-cor.test(data$Total_Fertility_Rate, data$Share_in_Parliament) #-0.4001, significant
+cor.test(data$Total_Fertility_Rate, data$GDP_growth)
+cor.test(data$Total_Fertility_Rate, data$Share_in_Parliament)
 ```
 
 # Regression analysis
 
-General models
+Genderal models - without 0.995 and 0.005 quantiles in the variables of interest
 
 ```{r}
-data$Right_to_Vote = as.factor(data$Right_to_Vote)
-pdf_long = pdata.frame(data, index = c('Country', 'Year'))
+no_outliers = data
+no_outliers$Right_to_Vote = as.numeric(no_outliers$Right_to_Vote)
 
-# OSL models
+for(i in c(3,4,12)){
+  
+  Q1 = quantile(no_outliers[,i], .005, na.rm = TRUE)
+  Q3 = quantile(no_outliers[,i], .995, na.rm = TRUE)
+  
+  no_outliers = subset(no_outliers, no_outliers[,i] > Q1 | no_outliers[,i] < Q3)
+}
 
-ols_suffrage = plm(GDP_growth ~ Right_to_Vote + Democracy_Estimate + Educ_Gender_Equality + Female_Years_School + Investments + Total_Fertility_Rate, data = pdf_long, model = 'pooling')
-ols_share = plm(GDP_growth ~ Share_in_Parliament + Democracy_Estimate + Educ_Gender_Equality + Female_Years_School + + Investments + Total_Fertility_Rate, data = pdf_long, model = 'pooling')
-
-# TSLS models
-
-tsls_suffrage = plm(GDP_growth ~ Right_to_Vote + Democracy_Estimate + Educ_Gender_Equality + Female_Years_School + Investments + Total_Fertility_Rate | Anti_Patriarchy_Score + Democracy_Estimate  + Educ_Gender_Equality + Female_Years_School + Investments + Total_Fertility_Rate, data = pdf_long, effect = 'twoways', model = 'within')
-tsls_share = plm(GDP_growth ~ Share_in_Parliament + Democracy_Estimate  + Educ_Gender_Equality + Female_Years_School + Investments + Total_Fertility_Rate | Anti_Patriarchy_Score + Democracy_Estimate + Female_Years_School + Educ_Gender_Equality + Investments + Total_Fertility_Rate, data = pdf_long, effect = 'twoways', model = 'within')
-
-stargazer(ols_suffrage, ols_share, tsls_suffrage, tsls_share, keep = c('Right_to_Vote', 'Share_in_Parliament', 'Democracy_Estimate', 'Educ_Gender_Equality', 'Female_Years_School', 'Investments', 'Total_Fertility_Rate', 'GDP_initial', 'Anti_Patriarchy_Score'), type = 'text', omit.stat = 'f', column.labels = c("OLS", "OLS", "TSLS", "TSLS"))
-
-coeftest(ols_suffrage, df = Inf, vcov = vcovHC, type = 'HC0', method = "arellano", cluster = "group")
-coeftest(ols_share, df = Inf, vcov = vcovHC, type = 'HC0', method = "arellano", cluster = "group")
-coeftest(tsls_suffrage, df = Inf, vcov = vcovHC, type = 'HC0', method = "arellano", cluster = "group")
-coeftest(tsls_share, df = Inf, vcov = vcovHC, type = 'HC0', method = "arellano", cluster = "group")
-```
-
-Without obvious outliers
-
-```{r}
-no_outliers = data %>% filter(Country != 'Gabon') %>% filter(Country != 'Zimbabwe' | Year != 1994) %>% filter(Country != 'Zimbabwe' | Year != 1992)
 
 no_outliers$Right_to_Vote = as.factor(no_outliers$Right_to_Vote)
 pdf_long = pdata.frame(no_outliers, index = c('Country', 'Year'))
 
-# OSL models
+## (Table 1)
 
 ols_suffrage = plm(GDP_growth ~ Right_to_Vote + Democracy_Estimate + Educ_Gender_Equality + Female_Years_School + Investments + Total_Fertility_Rate, data = pdf_long, model = 'pooling')
 ols_share = plm(GDP_growth ~ Share_in_Parliament + Democracy_Estimate + Educ_Gender_Equality + Female_Years_School + Investments + Total_Fertility_Rate, data = pdf_long, model = 'pooling')
 
-# TSLS models
-
-tsls_suffrage = plm(GDP_growth ~ Right_to_Vote + Democracy_Estimate + Educ_Gender_Equality + Female_Years_School + Investments + Total_Fertility_Rate | Anti_Patriarchy_Score + Democracy_Estimate + Educ_Gender_Equality + Female_Years_School + Investments + Total_Fertility_Rate, data = pdf_long, effect = 'individual', model = 'within')
-tsls_share = plm(GDP_growth ~ Share_in_Parliament + Democracy_Estimate + Educ_Gender_Equality + Female_Years_School + Investments + Total_Fertility_Rate | Anti_Patriarchy_Score + Democracy_Estimate + Educ_Gender_Equality + Female_Years_School + Investments + Total_Fertility_Rate, data = pdf_long, effect = 'twoways', model = 'within')
-
-stargazer(ols_suffrage, ols_share, tsls_suffrage, tsls_share, keep = c('Right_to_Vote', 'Share_in_Parliament', 'Democracy_Estimate', 'Educ_Gender_Equality', 'Female_Years_School', 'Investments', 'Total_Fertility_Rate', 'GDP_initial', 'Anti_Patriarchy_Score'), type = 'text', omit.stat = 'f', column.labels = c("OLS", "OLS", "TSLS", "TSLS"))
-
-coeftest(ols_suffrage, df = Inf, vcov = vcovHC, type = 'HC0', method = "arellano", cluster = "group")
-coeftest(ols_share, df = Inf, vcov = vcovHC, type = 'HC0', method = "arellano", cluster = "group")
-coeftest(tsls_suffrage, df = Inf, vcov = vcovHC, type = 'HC0', method = "arellano", cluster = "group")
-coeftest(tsls_share, df = Inf, vcov = vcovHC, type = 'HC0', method = "arellano", cluster = "group")
-```
-
-Without 0.995 and 0.005 quantiles in the variables of interest
-
-```{r}
-absolutely_no_outliers = data
-absolutely_no_outliers$Right_to_Vote = as.numeric(absolutely_no_outliers$Right_to_Vote)
-
-for(i in c(3,4,12)){
-  
-  Q1 = quantile(absolutely_no_outliers[,i], .005, na.rm = TRUE)
-  Q3 = quantile(absolutely_no_outliers[,i], .995, na.rm = TRUE)
-  
-  absolutely_no_outliers = subset(absolutely_no_outliers, absolutely_no_outliers[,i] > Q1 | absolutely_no_outliers[,i] < Q3)
-}
-
-
-absolutely_no_outliers$Right_to_Vote = as.factor(absolutely_no_outliers$Right_to_Vote)
-pdf_long = pdata.frame(absolutely_no_outliers, index = c('Country', 'Year'))
-
-# OSL models
-
-ols_suffrage = plm(GDP_growth ~ Right_to_Vote + Democracy_Estimate + Educ_Gender_Equality + Female_Years_School + Investments + Total_Fertility_Rate, data = pdf_long, model = 'pooling')
-ols_share = plm(GDP_growth ~ Share_in_Parliament + Democracy_Estimate + Educ_Gender_Equality + Female_Years_School + Investments + Total_Fertility_Rate, data = pdf_long, model = 'pooling')
-
-# TSLS models
+## (Table 2)
 
 tsls_suffrage = plm(GDP_growth ~ Right_to_Vote + Democracy_Estimate + Educ_Gender_Equality + Female_Years_School + Investments + Total_Fertility_Rate | Anti_Patriarchy_Score + Democracy_Estimate + Educ_Gender_Equality + Female_Years_School + Investments + Total_Fertility_Rate, data = pdf_long, effect = 'twoways', model = 'within')
 tsls_share = plm(GDP_growth ~ Share_in_Parliament + Democracy_Estimate + Educ_Gender_Equality + Female_Years_School + Investments + Total_Fertility_Rate | Anti_Patriarchy_Score + Democracy_Estimate + Educ_Gender_Equality + Female_Years_School + Investments + Total_Fertility_Rate, data = pdf_long, effect = 'twoways', model = 'within')
@@ -321,28 +332,34 @@ coeftest(tsls_suffrage, df = Inf, vcov = vcovHC, type = 'HC0', method = "arellan
 coeftest(tsls_share, df = Inf, vcov = vcovHC, type = 'HC0', method = "arellano", cluster = "group")
 ```
 
-Without Middle East & North Africa
+Democracy
 
 ```{r}
-selected = data %>% filter(Region != 'Without Middle East & North Africa')
+## (Table 3)
 
-selected$Right_to_Vote = as.factor(selected$Right_to_Vote)
-pdf_long = pdata.frame(selected, index = c('Country', 'Year'))
+latest = data %>% filter(Democracy_Estimate >= 0.7)
+latest$Right_to_Vote = as.factor(latest$Right_to_Vote)
+pdf_long = pdata.frame(latest, index = c('Country', 'Year'))
 
 # OSL models
-
-ols_suffrage = plm(GDP_growth ~ Right_to_Vote + Democracy_Estimate + Educ_Gender_Equality + Female_Years_School + Investments + Total_Fertility_Rate, data = pdf_long, model = 'pooling')
 ols_share = plm(GDP_growth ~ Share_in_Parliament + Democracy_Estimate + Educ_Gender_Equality + Female_Years_School + Investments + Total_Fertility_Rate, data = pdf_long, model = 'pooling')
 
 # TSLS models
-
-tsls_suffrage = plm(GDP_growth ~ Right_to_Vote + Democracy_Estimate + Educ_Gender_Equality + Female_Years_School + Investments + Total_Fertility_Rate | Anti_Patriarchy_Score + Democracy_Estimate + Educ_Gender_Equality + Female_Years_School + Investments + Total_Fertility_Rate, data = pdf_long, effect = 'individual', model = 'within')
 tsls_share = plm(GDP_growth ~ Share_in_Parliament + Democracy_Estimate + Educ_Gender_Equality + Female_Years_School + Investments + Total_Fertility_Rate | Anti_Patriarchy_Score + Democracy_Estimate + Educ_Gender_Equality + Female_Years_School + Investments + Total_Fertility_Rate, data = pdf_long, effect = 'twoways', model = 'within')
 
-stargazer(ols_suffrage, ols_share, tsls_suffrage, tsls_share, keep = c('Right_to_Vote', 'Share_in_Parliament', 'Democracy_Estimate', 'Educ_Gender_Equality', 'Female_Years_School', 'Investments', 'Total_Fertility_Rate', 'GDP_initial', 'Anti_Patriarchy_Score'), type = 'text', omit.stat = 'f', column.labels = c("OLS", "OLS", "TSLS", "TSLS"))
+stargazer(ols_share, tsls_share, keep = c('Right_to_Vote', 'Share_in_Parliament', 'Democracy_Estimate', 'Educ_Gender_Equality', 'Female_Years_School', 'Investments', 'Total_Fertility_Rate', 'GDP_initial', 'Anti_Patriarchy_Score'), type = 'text', omit.stat = 'f', column.labels = c("OLS", "TSLS"))
 
-coeftest(ols_suffrage, df = Inf, vcov = vcovHC, type = 'HC0', method = "arellano", cluster = "group")
 coeftest(ols_share, df = Inf, vcov = vcovHC, type = 'HC0', method = "arellano", cluster = "group")
-coeftest(tsls_suffrage, df = Inf, vcov = vcovHC, type = 'HC0', method = "arellano", cluster = "group")
 coeftest(tsls_share, df = Inf, vcov = vcovHC, type = 'HC0', method = "arellano", cluster = "group")
 ```
+
+
+
+
+
+
+
+
+
+
+
