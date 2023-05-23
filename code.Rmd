@@ -1,5 +1,5 @@
 ---
-title: "Bachelor Thesis - Ania Safronova, 2023 *** *****"
+title: "Bachelor thesis, Ania S., 2023, россия будет свободной"
 output: html_document
 ---
 
